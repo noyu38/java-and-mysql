@@ -10,7 +10,7 @@ public class testApp {
 	// データベース接続情報
 	private static final String DB_URL = "jdbc:mysql://localhost:3306/test_app_db";
 	private static final String DB_USER = "root";
-	private static final String DB_PASSWORD = "nojiyuma.38";
+	private static final String DB_PASSWORD = Pass.pass;
 
 	/* ユーザ情報をデータベースに登録する
 	 * @param name 登録するユーザの名前
