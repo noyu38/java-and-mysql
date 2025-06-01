@@ -1,6 +1,7 @@
 package com.noyu.test_app;
 
 import jakarta.validation.Valid;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -8,6 +9,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+
+
 
 
 
@@ -39,11 +42,24 @@ public class UserController {
     public String registerUser(@Valid @ModelAttribute("userForm") UserForm userForm,
                                 BindingResult bindingResult,
                                 Model model) {
+
+        // 入力形式のチェック
         if (bindingResult.hasErrors()) {
             model.addAttribute("message", "入力内容にエラーがあります。");
             model.addAttribute("messageType", "error");
             return "user-registration";
         }
+
+        // メールアドレスの重複チェック
+        Optional<User> existingUser = userRepository.findByEmail(userForm.getEmail());
+        if (existingUser.isPresent()) { // ユーザーがすでに存在する場合
+            bindingResult.rejectValue("email", "email.duplicate", "このメールアドレスは既に登録されています。");
+            model.addAttribute("message", "ユーザー登録に失敗しました。");
+            model.addAttribute("messageType", "error");
+            return "user-registration";
+        }
+
+        // UserFormからUserエンティティを作成
         User user = new User();
         user.setName(userForm.getName());
         user.setEmail(userForm.getEmail());
@@ -57,6 +73,7 @@ public class UserController {
         } catch (Exception e) {
             model.addAttribute("message", "ユーザー登録に失敗しました。メールアドレスがすでに登録されている可能性があります。");
             model.addAttribute("messageType", "error");
+            model.addAttribute("userForm", userForm);
             System.err.println("登録エラー: " + e.getMessage());
             e.printStackTrace();
         }
